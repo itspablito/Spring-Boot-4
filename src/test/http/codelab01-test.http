@@ -1,0 +1,74 @@
+### ==========================================
+### Codelab 01 - Pruebas Funcionales API Cliente
+### Base URL: http://localhost:8080/api/v1/cliente-service
+### ==========================================
+
+@host = http://localhost:8080/api/v1/cliente-service
+
+### 1. Obtener lista de regiones de catálogo
+# Debe devolver la lista de regiones precargadas (no [])
+GET {{host}}/clientes/regiones
+Accept: application/json
+
+###
+
+### 2. Obtener lista inicial de clientes
+# Devuelve [] si no hay registros o la lista actual
+GET {{host}}/clientes
+Accept: application/json
+
+###
+
+### 3. Crear un nuevo cliente (POST)
+# Debe devolver HTTP 201 Created con el objeto creado (incluyendo 'id' y 'createAt')
+POST {{host}}/clientes
+Content-Type: application/json
+
+{
+  "nombre": "Andrés",
+  "apellido": "Guzmán",
+  "email": "profesor@bolsadeideas.com",
+  "region": {
+    "id": 1
+  }
+}
+
+###
+
+### 4. Obtener cliente por ID existente
+# Sustituir '1' por el ID generado en el POST anterior.
+# Debe devolver HTTP 200 OK con el cliente y su región completa cargada.
+GET {{host}}/clientes/1
+Accept: application/json
+
+###
+
+### 5. Actualizar un cliente existente (PUT)
+# Debe devolver HTTP 201 Created (o 200 OK según la implementación) con los datos actualizados.
+# El campo 'createAt' no debe ser alterado.
+PUT {{host}}/clientes/1
+Content-Type: application/json
+
+{
+  "nombre": "Andrés Felipe",
+  "apellido": "Guzmán",
+  "email": "andres.guzman@bolsadeideas.com",
+  "region": {
+    "id": 1
+  }
+}
+
+###
+
+### 6. Obtener cliente inexistente (Prueba de 404)
+# Debe devolver HTTP 404 Not Found
+GET {{host}}/clientes/99
+Accept: application/json
+
+###
+
+### 7. Eliminar cliente por ID (DELETE)
+# Debe devolver HTTP 204 No Content
+DELETE {{host}}/clientes/1
+
+###
