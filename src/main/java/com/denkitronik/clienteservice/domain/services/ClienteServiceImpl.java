@@ -1,15 +1,17 @@
-package com.denkitronik.clienteservice.services;
+package com.denkitronik.clienteservice.domain.services;
 
-import com.denkitronik.clienteservice.entities.Cliente;
-import com.denkitronik.clienteservice.entities.Region;
-import com.denkitronik.clienteservice.repositories.IClienteDao;
+import com.denkitronik.clienteservice.domain.exception.ClienteNotFoundException;
+import com.denkitronik.clienteservice.domain.exception.ClienteServiceException;
+import com.denkitronik.clienteservice.domain.entities.Cliente;
+import com.denkitronik.clienteservice.domain.entities.Region;
+import com.denkitronik.clienteservice.domain.repositories.IClienteDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ClienteServiceImpl implements IClienteService {
@@ -31,20 +33,29 @@ public class ClienteServiceImpl implements IClienteService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Cliente> findById(Long id) {
-        return clienteDao.findById(id);
+    public Cliente findById(Long id) {
+        return clienteDao.findById(id)
+                .orElseThrow(() -> new ClienteNotFoundException(id));
     }
 
     @Override
     @Transactional
     public Cliente save(Cliente cliente) {
-        return clienteDao.save(cliente);
+        try {
+            return clienteDao.save(cliente);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ClienteServiceException(
+                "Error al guardar el cliente: datos duplicados o restricción violada",
+                ex
+            );
+        }
     }
 
     @Override
     @Transactional
     public Cliente update(Long id, Cliente cliente) {
-        Cliente actual = clienteDao.findById(id).orElseThrow();
+        Cliente actual = clienteDao.findById(id)
+                .orElseThrow(() -> new ClienteNotFoundException(id));
         actual.setNombre(cliente.getNombre());
         actual.setApellido(cliente.getApellido());
         actual.setEmail(cliente.getEmail());
@@ -56,6 +67,9 @@ public class ClienteServiceImpl implements IClienteService {
     @Override
     @Transactional
     public void delete(Long id) {
+        if (!clienteDao.existsById(id)) {
+            throw new ClienteNotFoundException(id);
+        }
         clienteDao.deleteById(id);
     }
 
