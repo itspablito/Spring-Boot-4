@@ -4,8 +4,10 @@ import com.denkitronik.clienteservice.entities.Cliente;
 import com.denkitronik.clienteservice.entities.Region;
 import com.denkitronik.clienteservice.repositories.IClienteDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,38 +18,49 @@ public class ClienteServiceImpl implements IClienteService {
     private IClienteDao clienteDao;
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<Cliente> findAll(Pageable pageable) {
+        return clienteDao.findAll(pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Cliente> findAll() {
         return clienteDao.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<Cliente> findById(Long id) {
         return clienteDao.findById(id);
     }
 
     @Override
+    @Transactional
     public Cliente save(Cliente cliente) {
         return clienteDao.save(cliente);
     }
 
     @Override
+    @Transactional
     public Cliente update(Long id, Cliente cliente) {
-        // Cargar el cliente existente para no perder campos como createAt
-        Cliente clienteActual = clienteDao.findById(id).orElseThrow();
-        clienteActual.setNombre(cliente.getNombre());
-        clienteActual.setApellido(cliente.getApellido());
-        clienteActual.setEmail(cliente.getEmail());
-        clienteActual.setFoto(cliente.getFoto());
-        clienteActual.setRegion(cliente.getRegion());
-        return clienteDao.save(clienteActual);
+        Cliente actual = clienteDao.findById(id).orElseThrow();
+        actual.setNombre(cliente.getNombre());
+        actual.setApellido(cliente.getApellido());
+        actual.setEmail(cliente.getEmail());
+        actual.setFoto(cliente.getFoto());
+        actual.setRegion(cliente.getRegion());
+        return clienteDao.save(actual);
     }
 
     @Override
-    public void delete(Cliente cliente) {
-        clienteDao.delete(cliente);
+    @Transactional
+    public void delete(Long id) {
+        clienteDao.deleteById(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Region> findAllRegiones() {
         return clienteDao.findAllRegiones();
     }
